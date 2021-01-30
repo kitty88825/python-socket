@@ -1,35 +1,31 @@
 import socket
 
-HOST = '0.0.0.0'
-PORT = 80
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-s.bind((HOST, PORT))
-s.listen(1)
+ADDRESS = ('localhost', 80)
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.bind(ADDRESS)
+server.listen(1)
 print('wait for connection...')
 
 while True:
-    conn, addr = s.accept()
-    print('connected by ' + str(addr))
+    client, addr = server.accept()
+    print(f'At {addr}')
 
-    while True:
-        indata = conn.recv(1024)
-        if len(indata) == 0:
-            conn.close()
-            print('client closed connection.')
-            break
+    response_status = 'HTTP/1.1 200 OK'
+    msg = "<html>Hello World</html>"
+    response_headers = {
+        'Content-Type': 'text/html; encoding=utf8',
+        'Content-Length': len(msg.encode(encoding="utf-8")),
+        'Connection': 'close',
+    }
+    response_headers_raw = ''.join('%s: %s\n' % (k, v) for k, v in response_headers.items())  # noqa: E501
 
-        outdata = """<!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Hello World</title>
-            </head>
-            <body>
-                <h1>Hello World!!!!</h1>
-            </body>
-            </html>
-        """
-        conn.send(outdata.encode())
+    client.send(response_status.encode(encoding="utf-8"))
+    client.send(response_headers_raw.encode(encoding="utf-8"))
+    client.send('\n'.encode(encoding="utf-8"))
+    client.send(msg.encode(encoding="utf-8"))
+    client.close()
+
+server.close()

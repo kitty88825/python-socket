@@ -13,18 +13,18 @@ while True:
     client, addr = server.accept()
     print(f'At {addr}')
 
-    response_status = 'HTTP/1.1 200 OK'
+    response_status = 'HTTP/1.1 200 OK\r\n'
     msg = "<html>Hello World</html>"
     response_headers = {
         'Content-Type': 'text/html; encoding=utf8',
         'Content-Length': len(msg.encode()),
         'Connection': 'close',
     }
-    response_headers_raw = ''.join('%s: %s\n' % (k, v) for k, v in response_headers.items())  # noqa: E501
+    response_headers_raw = ''.join('%s: %s\r\n' % (k, v) for k, v in response_headers.items())  # noqa: E501
 
     client.send(response_status.encode())
     client.send(response_headers_raw.encode())
-    client.send('\n'.encode())
+    client.send('\r\n'.encode())
     client.send(msg.encode())
     client.close()
 
